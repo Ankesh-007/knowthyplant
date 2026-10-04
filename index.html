@@ -3,11 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Plant Identifier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KnowThyPlant - Plant Identifier</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <div class="user-bar" id="user-bar">
+        <span id="user-email"></span>
+        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+    </div>
 
     <h1>🌱 Plant Identification</h1>
 
@@ -23,6 +28,8 @@
         <p id="plant-confidence"></p>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
 
