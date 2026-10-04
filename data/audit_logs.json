@@ -1,0 +1,83 @@
+[
+  {
+    "id": "LOG-9679",
+    "timestamp": "2026-10-04 13:01:49",
+    "user": "Marcus Vance",
+    "role": "Super Admin",
+    "action": "ADMIN_LOGIN",
+    "details": "Admin session started for marcus.vance@buildvantage.internal",
+    "ip": "::1"
+  },
+  {
+    "id": "LOG-9669",
+    "timestamp": "2026-10-04 13:01:49",
+    "user": "Admin Dispatcher",
+    "role": "Field Allocations",
+    "action": "WORKER_DELETED",
+    "details": "Removed worker profile #LAB-TEST999",
+    "ip": "::1"
+  },
+  {
+    "id": "LOG-9666",
+    "timestamp": "2026-10-04 13:01:49",
+    "user": "Admin Dispatcher",
+    "role": "Field Allocations",
+    "action": "WORKER_UPDATED",
+    "details": "Updated record for worker Integration Test Worker (LAB-TEST999)",
+    "ip": "::1"
+  },
+  {
+    "id": "LOG-9661",
+    "timestamp": "2026-10-04 13:01:49",
+    "user": "Admin Dispatcher",
+    "role": "Field Allocations",
+    "action": "WORKER_REGISTERED",
+    "details": "Enrolled worker Integration Test Worker (LAB-TEST999) - Trade: Rigging Specialist",
+    "ip": "::1"
+  },
+  {
+    "id": "LOG-1092",
+    "timestamp": "2026-10-04 14:55:12",
+    "user": "Priya Nair",
+    "role": "Payroll & Accounts Lead",
+    "action": "APPROVED_PAYROLL_BATCH",
+    "details": "Validated daily wage calculation for 12 crew members at Metro Rail Extension - Line 3 ($2,640 total)",
+    "ip": "192.168.1.42"
+  },
+  {
+    "id": "LOG-1091",
+    "timestamp": "2026-10-04 14:20:05",
+    "user": "Sarah Jenkins",
+    "role": "Dispatch Coordinator",
+    "action": "DISPATCH_CREW",
+    "details": "Allocated worker #LAB-801 (Alejandro Morales) to Skyline Residency Tower B",
+    "ip": "192.168.1.18"
+  },
+  {
+    "id": "LOG-1090",
+    "timestamp": "2026-10-04 13:12:44",
+    "user": "David Ortiz",
+    "role": "Compliance & Safety Officer",
+    "action": "KYC_VERIFICATION_PASS",
+    "details": "Approved biometric identity & OSHA-30 clearance for #LAB-803 (Rohan Sharma)",
+    "ip": "192.168.1.33"
+  },
+  {
+    "id": "LOG-1089",
+    "timestamp": "2026-10-04 11:45:00",
+    "user": "Marcus Vance",
+    "role": "Super Admin",
+    "action": "USER_ROLE_UPDATED",
+    "details": "Modified system privileges for Kenji Sato (Role updated to Site Operations Auditor)",
+    "ip": "192.168.1.10"
+  },
+  {
+    "id": "LOG-1088",
+    "timestamp": "2026-10-04 09:30:19",
+    "user": "Marcus Vance",
+    "role": "Super Admin",
+    "action": "SYSTEM_BACKUP",
+    "details": "Automated snapshot of workforce registry, site assignments, and shift ledgers generated",
+    "ip": "192.168.1.10"
+  }
+]

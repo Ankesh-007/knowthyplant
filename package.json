@@ -1,0 +1,27 @@
+{
+  "name": "buildvantage-labour-registry",
+  "version": "2.0.0",
+  "description": "A modern, high-performance web platform built for contractors, labor aggregators, site foremen, and enterprise construction managers to register, verify, allocate, dispatch, and track skilled and general workforce across multiple project sites.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ankesh-007/knowthyplant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ankesh-007/knowthyplant/issues"
+  },
+  "homepage": "https://github.com/Ankesh-007/knowthyplant#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "dotenv": "^18.0.5"
+  }
+}

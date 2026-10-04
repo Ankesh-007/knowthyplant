@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BuildVantage - Backend Administrator Gateway. Manage administrative users, operational access roles, security credentials, and system audit logs.">
+  <title>BuildVantage | Backend Admin Users & Security Console</title>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Sticky Header -->
+    <header class="top-header">
+      <div class="header-inner">
+        <!-- Brand identity -->
+        <a href="/backend-admin" class="brand-wrapper" title="BuildVantage Backend Admin Portal">
+          <div class="brand-icon-box" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);">
+            <!-- Shield & Key SVG -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+          </div>
+          <div class="brand-titles">
+            <h1>BUILD<span class="highlight" style="color: var(--accent-cyan);">VANTAGE</span> <span class="badge-env" style="background: var(--accent-cyan-bg); color: var(--accent-cyan); border-color: var(--accent-cyan-border);">ADMIN GATEWAY</span></h1>
+            <div class="brand-tagline">Backend Users, Roles & Security Permissions Console</div>
+          </div>
+        </a>
+
+        <!-- Admin Global Search -->
+        <div class="header-search">
+          <div class="search-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="admin-search-input" placeholder="Search backend users by name, email, or role..." autocomplete="off">
+            <kbd>/</kbd>
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="header-actions">
+          <div class="status-pill-live" id="db-status-pill" title="Supabase Database Status (Click for details)">
+            <span class="status-pulse-dot" id="db-status-dot"></span>
+            <span id="db-status-text">SUPABASE SYNC</span>
+          </div>
+
+          <a href="/" class="btn btn-outline btn-sm" title="Return to Field Labour Registry">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Public Registry</span>
+          </a>
+
+          <button type="button" class="btn btn-primary" id="btn-open-add-user-modal" style="background: linear-gradient(135deg, var(--accent-cyan), #3b82f6); color: #fff;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>+ Add Backend User</span>
+          </button>
+
+          <button type="button" class="btn-icon" id="theme-toggle-btn" title="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Admin Workspace -->
+    <main class="main-wrapper">
+      
+      <!-- Top Level Admin KPIs -->
+      <section class="stats-grid" aria-label="Backend Administration Metrics">
+        <!-- Card 1: Total Admin Users -->
+        <article class="stat-card stat-cyan" id="kpi-total-admin-users">
+          <div class="stat-top">
+            <span class="stat-label">Backend Users</span>
+            <div class="stat-icon icon-cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="admin-val-total">0</div>
+          <div class="stat-subtext">
+            <span class="stat-trend-up" id="admin-val-active-pct">100% active</span>
+            <span>authorized operators</span>
+          </div>
+        </article>
+
+        <!-- Card 2: Active Operators -->
+        <article class="stat-card stat-emerald">
+          <div class="stat-top">
+            <span class="stat-label">Active Accounts</span>
+            <div class="stat-icon icon-emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="admin-val-active">0</div>
+          <div class="stat-subtext">
+            <span class="stat-trend-up">Zero credential flags</span>
+          </div>
+        </article>
+
+        <!-- Card 3: 2FA Security Compliance -->
+        <article class="stat-card stat-blue">
+          <div class="stat-top">
+            <span class="stat-label">2FA Compliance</span>
+            <div class="stat-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="admin-val-2fa">0%</div>
+          <div class="stat-subtext">
+            <span>MFA enforced for Root Ops</span>
+          </div>
+        </article>
+
+        <!-- Card 4: Configured Access Tiers -->
+        <article class="stat-card stat-gold">
+          <div class="stat-top">
+            <span class="stat-label">Roles Configured</span>
+            <div class="stat-icon icon-gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="admin-val-roles">0</div>
+          <div class="stat-subtext">
+            <span>Granular RBAC Matrix</span>
+          </div>
+        </article>
+      </section>
+
+      <!-- View Selector Tabs -->
+      <section class="view-tabs-bar" aria-label="Admin Navigation Tabs">
+        <ul class="tabs-list" role="tablist">
+          <li>
+            <button type="button" class="tab-btn active" role="tab" id="tab-btn-users" data-target="panel-admin-users">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Backend Administrators</span>
+              <span class="tab-counter" id="badge-admin-count">0</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-matrix" data-target="panel-admin-matrix">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              <span>Roles & Permission Matrix</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-audit" data-target="panel-admin-audit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span>Security Audit Trail</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tabs-extra-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-refresh-admin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            <span>Sync Data</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PANEL 1: BACKEND USERS DIRECTORY
+           ==================================================================== -->
+      <section class="view-panel active" id="panel-admin-users" role="tabpanel">
+        
+        <!-- Filter and Search Toolbar -->
+        <div class="controls-toolbar">
+          <div class="toolbar-primary">
+            <div class="filter-group">
+              <!-- Role Filter -->
+              <div class="select-wrap">
+                <select id="filter-admin-role" class="custom-select" aria-label="Filter by Admin Role">
+                  <option value="ALL">All Roles (Any)</option>
+                  <option value="Super Admin">Super Admin</option>
+                  <option value="Dispatch Coordinator">Dispatch Coordinator</option>
+                  <option value="Compliance & Safety Officer">Compliance & Safety Officer</option>
+                  <option value="Payroll & Accounts Lead">Payroll & Accounts Lead</option>
+                  <option value="Site Operations Auditor">Site Operations Auditor</option>
+                </select>
+                <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+
+              <!-- Status Filter -->
+              <div class="select-wrap">
+                <select id="filter-admin-status" class="custom-select" aria-label="Filter by Status">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
+                <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-mode-toggle">
+              <button type="button" class="view-mode-btn active" id="btn-admin-view-grid" title="Cards View">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+              <button type="button" class="view-mode-btn" id="btn-admin-view-table" title="Data Table View">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="workers-grid" id="admin-users-cards" style="margin-top: 1.25rem;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container" id="admin-users-table-container" style="display: none; margin-top: 1.25rem;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Administrator</th>
+                <th>Access Role</th>
+                <th>Department</th>
+                <th>Permissions</th>
+                <th>2FA</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PANEL 2: ROLES & PERMISSION MATRIX
+           ==================================================================== -->
+      <section class="view-panel" id="panel-admin-matrix" role="tabpanel">
+        <div style="margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800;">Enterprise Role-Based Access Control (RBAC)</h2>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Defines granular operational capabilities granted to backend administrator accounts.</p>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Access Capability</th>
+                <th>Super Admin</th>
+                <th>Dispatch Lead</th>
+                <th>Compliance Officer</th>
+                <th>Payroll Lead</th>
+                <th>Site Auditor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Manage Backend Admin Accounts</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ FULL ACCESS</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+              </tr>
+              <tr>
+                <td><strong>Register & Edit Labourers</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--accent-gold); font-weight: 600;">View Only</span></td>
+                <td><span style="color: var(--accent-gold); font-weight: 600;">View Only</span></td>
+                <td><span style="color: var(--accent-gold); font-weight: 600;">View Only</span></td>
+              </tr>
+              <tr>
+                <td><strong>Deploy & Recall Crews to Sites</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ FULL ACCESS</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+              </tr>
+              <tr>
+                <td><strong>Statutory KYC & OSHA Certification Clearances</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ FULL ACCESS</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--accent-gold); font-weight: 600;">Audit Only</span></td>
+              </tr>
+              <tr>
+                <td><strong>Daily Wage Rates & Payroll Payout Approval</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ FULL ACCESS</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+              </tr>
+              <tr>
+                <td><strong>Shift Attendance Punch Marking</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+              </tr>
+              <tr>
+                <td><strong>Financial & Database Export (CSV/JSON)</strong></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+                <td><span style="color: var(--accent-emerald); font-weight: 700;">✓ Allowed</span></td>
+                <td><span style="color: var(--text-muted);">✕ Denied</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PANEL 3: SECURITY AUDIT TRAIL
+           ==================================================================== -->
+      <section class="view-panel" id="panel-admin-audit" role="tabpanel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800;">Real-Time Administrative Audit Logs</h2>
+            <p style="font-size: 0.82rem; color: var(--text-muted);">Immutable record of administrative actions, user creations, rate updates, and site dispatches.</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-audit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh Audit Feed</span>
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Log ID & Time</th>
+                <th>Admin Operator</th>
+                <th>Action Category</th>
+                <th>Operation Details</th>
+                <th>Source IP</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div class="footer-inner">
+        <div>
+          <strong>BUILDVANTAGE BACKEND ADMINISTRATION GATEWAY</strong> — Restricted Internal Operations Console.
+        </div>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+          <a href="/" style="color: var(--accent-gold); text-decoration: none;">Workforce Registry (Public)</a>
+          <span style="font-family: var(--font-mono); color: var(--accent-cyan);">ROOT PERMISSIONS ENABLED</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: ADD / EDIT BACKEND ADMIN USER
+       ====================================================================== -->
+  <div class="modal-overlay" id="modal-admin-user">
+    <div class="modal-box" role="dialog" aria-labelledby="modal-admin-title">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-admin-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: var(--accent-cyan);">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+          </svg>
+          <span id="modal-admin-title-text">Create Backend Administrator</span>
+        </h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-admin-user" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-admin-user">
+        <input type="hidden" id="admin-user-id" value="">
+        <div class="modal-body">
+          <div class="form-grid">
+            
+            <div class="form-group">
+              <label class="form-label" for="inp-admin-name">Full Name <span class="req">*</span></label>
+              <input type="text" id="inp-admin-name" class="form-control" placeholder="e.g. Alex Morgan" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-admin-email">Corporate Email <span class="req">*</span></label>
+              <input type="email" id="inp-admin-email" class="form-control" placeholder="a.morgan@buildvantage.internal" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-admin-role">System Role <span class="req">*</span></label>
+              <select id="inp-admin-role" class="form-control" required>
+                <option value="Super Admin">Super Admin</option>
+                <option value="Dispatch Coordinator" selected>Dispatch Coordinator</option>
+                <option value="Compliance & Safety Officer">Compliance & Safety Officer</option>
+                <option value="Payroll & Accounts Lead">Payroll & Accounts Lead</option>
+                <option value="Site Operations Auditor">Site Operations Auditor</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-admin-dept">Department</label>
+              <input type="text" id="inp-admin-dept" class="form-control" placeholder="e.g. Field Operations">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inp-admin-status">Account Status</label>
+              <select id="inp-admin-status" class="form-control">
+                <option value="Active" selected>Active</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; margin-top: 1.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
+                <input type="checkbox" id="inp-admin-2fa" checked>
+                <span>Require 2-Factor Authentication</span>
+              </label>
+            </div>
+
+            <div class="form-group form-group-full" style="background: var(--bg-input); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <label class="form-label" style="margin-bottom: 0.5rem;">Granted Privileges & Capabilities</label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; font-size: 0.82rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="perm" value="manage_users">
+                  <span>Manage Admin Users</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="perm" value="deploy_crew" checked>
+                  <span>Dispatch & Deploy Crew</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="perm" value="edit_wages">
+                  <span>Edit Wages & Rates</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="perm" value="compliance_audit">
+                  <span>Verify Compliance (KYC/OSHA)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" name="perm" value="export_data">
+                  <span>Export Financial Reports</span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-admin-user">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-admin-user" style="background: linear-gradient(135deg, var(--accent-cyan), #3b82f6); color: #fff;">Save User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Supabase Cloud Database Diagnostics & Setup -->
+  <div class="modal-overlay" id="modal-supabase-info">
+    <div class="modal-box" style="max-width: 620px;" role="dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: #10b981;">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          <span>Supabase Database Diagnostics</span>
+        </h3>
+        <button type="button" class="modal-close-btn" data-close-modal="modal-supabase-info" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div id="supabase-modal-content">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary" id="btn-recheck-supabase">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span>Recheck Connection</span>
+        </button>
+        <button type="button" class="btn btn-primary" data-close-modal="modal-supabase-info">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Admin Application Logic -->
+  <script src="admin.js"></script>
+</body>
+</html>

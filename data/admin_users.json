@@ -1,0 +1,87 @@
+[
+  {
+    "id": "ADM-001",
+    "name": "Marcus Vance",
+    "email": "marcus.vance@buildvantage.internal",
+    "role": "Super Admin",
+    "department": "Executive Operations",
+    "status": "Active",
+    "permissions": [
+      "all_access",
+      "manage_users",
+      "deploy_crew",
+      "edit_wages",
+      "compliance_audit",
+      "export_data"
+    ],
+    "lastLogin": "2026-10-04 13:01",
+    "twoFactor": true,
+    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    "id": "ADM-002",
+    "name": "Sarah Jenkins",
+    "email": "s.jenkins@buildvantage.internal",
+    "role": "Dispatch Coordinator",
+    "department": "Field Allocations",
+    "status": "Active",
+    "permissions": [
+      "deploy_crew",
+      "view_roster",
+      "site_requisitions",
+      "attendance_mark"
+    ],
+    "lastLogin": "2026-10-04 13:40",
+    "twoFactor": true,
+    "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    "id": "ADM-003",
+    "name": "David Ortiz",
+    "email": "d.ortiz@buildvantage.internal",
+    "role": "Compliance & Safety Officer",
+    "department": "Quality & Standards",
+    "status": "Active",
+    "permissions": [
+      "compliance_audit",
+      "kyc_verify",
+      "osha_clearance",
+      "medical_audit"
+    ],
+    "lastLogin": "2026-10-04 11:22",
+    "twoFactor": false,
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    "id": "ADM-004",
+    "name": "Priya Nair",
+    "email": "priya.nair@buildvantage.internal",
+    "role": "Payroll & Accounts Lead",
+    "department": "Finance & Payouts",
+    "status": "Active",
+    "permissions": [
+      "edit_wages",
+      "approve_payouts",
+      "export_financials",
+      "attendance_audit"
+    ],
+    "lastLogin": "2026-10-04 14:55",
+    "twoFactor": true,
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
+  },
+  {
+    "id": "ADM-005",
+    "name": "Kenji Sato",
+    "email": "k.sato@buildvantage.internal",
+    "role": "Site Operations Auditor",
+    "department": "Regional Site Supervision",
+    "status": "Suspended",
+    "permissions": [
+      "view_roster",
+      "attendance_mark"
+    ],
+    "lastLogin": "2026-09-28 09:12",
+    "twoFactor": false,
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
+  }
+]

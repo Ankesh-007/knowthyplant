@@ -1,0 +1,38 @@
+[
+  {
+    "id": "SITE-01",
+    "name": "Metro Rail Extension - Line 3 Viaduct",
+    "client": "Metropolitan Transit Authority",
+    "location": "North Corridor, Zone 4",
+    "quota": 15,
+    "supervisor": "Eng. Viktor Vance (+1 555-883-9102)",
+    "shiftTiming": "Morning Shift (07:00 - 15:30)"
+  },
+  {
+    "id": "SITE-02",
+    "name": "Skyline Residency Tower B",
+    "client": "Apex Urban Developers Ltd",
+    "location": "Waterfront Sector 12",
+    "quota": 18,
+    "supervisor": "Supervisor Marcus Reed (+1 555-492-8811)",
+    "shiftTiming": "Morning Shift (07:00 - 15:30)"
+  },
+  {
+    "id": "SITE-03",
+    "name": "Apex Logistics Multi-Hub Terminal",
+    "client": "Global Cargo Logistics",
+    "location": "Highway Interchange Sector 9",
+    "quota": 12,
+    "supervisor": "Foreman Dave Gallagher (+1 555-201-9494)",
+    "shiftTiming": "Evening Shift (15:00 - 23:30)"
+  },
+  {
+    "id": "SITE-04",
+    "name": "Solar Energy Substation Grid 2",
+    "client": "SunPower Renewable Utilities",
+    "location": "East Desert Basin, Lot 44",
+    "quota": 10,
+    "supervisor": "Chief Tech Sarah Chen (+1 555-731-0988)",
+    "shiftTiming": "Morning Shift (07:00 - 15:30)"
+  }
+]
