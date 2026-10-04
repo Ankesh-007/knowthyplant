@@ -16,10 +16,6 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-/**
- * Checks connection to Supabase and verifies whether the required tables exist.
- * @returns {Promise<{connected: boolean, tablesFound: string[], missingTables: string[], error: string|null}>}
- */
 async function checkSupabaseStatus() {
   const tables = ['workers', 'sites', 'attendance_records', 'admin_users', 'audit_logs'];
   const tablesFound = [];
@@ -55,9 +51,4 @@ async function checkSupabaseStatus() {
   };
 }
 
-module.exports = {
-  supabase,
-  checkSupabaseStatus,
-  supabaseUrl,
-  supabaseAnonKey
-};
+module.exports = { supabase, checkSupabaseStatus };
