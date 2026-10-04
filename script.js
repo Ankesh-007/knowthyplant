@@ -6,15 +6,44 @@ const plantName = document.getElementById("plant-name");
 const plantDesc = document.getElementById("plant-desc");
 const plantConfidence = document.getElementById("plant-confidence");
 
-// Open camera
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-        video.srcObject = stream;
-    })
-    .catch(err => {
-        alert("Camera access denied");
-        console.error("Camera error:", err);
-    });
+async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "auth.html";
+}
+
+function showUser(session) {
+    const userBar = document.getElementById("user-bar");
+    const userEmail = document.getElementById("user-email");
+    userEmail.textContent = session.user.email;
+    userBar.classList.add("visible");
+}
+
+// Check auth state — redirect to login if not signed in
+supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+        window.location.href = "auth.html";
+        return;
+    }
+    showUser(session);
+    startCamera();
+});
+
+supabase.auth.onAuthStateChange((_event, session) => {
+    if (!session) {
+        window.location.href = "auth.html";
+    }
+});
+
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            alert("Camera access denied");
+            console.error("Camera error:", err);
+        });
+}
 
 captureBtn.addEventListener("click", async () => {
     const context = canvas.getContext("2d");
@@ -28,7 +57,6 @@ captureBtn.addEventListener("click", async () => {
 });
 
 async function identifyPlant(image) {
-    // Note: This API Key should ideally be secured in a backend or environment variable for production.
     const API_KEY = "YOUR_PLANT_ID_API_KEY";
 
     plantName.textContent = "Identifying...";
