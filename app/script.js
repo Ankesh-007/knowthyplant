@@ -2,6 +2,8 @@
  * BUILDVANTAGE - Labour Supply & Workforce Registry Engine
  * Enterprise Operations Controller & State Manager
  */
+import { requireAdmin, signOutAdmin } from './js/adminGate.js';
+import * as data from './js/dataClient.js';
 
 (function () {
   'use strict';
@@ -437,16 +439,6 @@
     return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="${encodeURIComponent(color)}"/><text x="50%" y="54%" font-family="system-ui, sans-serif" font-weight="bold" font-size="38" fill="%23ffffff" dominant-baseline="middle" text-anchor="middle">${initials}</text></svg>`;
   }
 
-  // Generate Unique ID: #LAB-8XX
-  function generateNewWorkerId() {
-    const existingNums = state.workers.map(w => {
-      const match = w.id.match(/\d+/);
-      return match ? parseInt(match[0], 10) : 800;
-    });
-    const maxNum = existingNums.length ? Math.max(...existingNums) : 800;
-    return `LAB-${maxNum + 1}`;
-  }
-
   // Supabase & Cloud Backend State
   let supabaseStatus = {
     connected: false,
@@ -455,147 +447,85 @@
     missingTables: []
   };
 
-  // Check Supabase Cloud Connection & Update Navbar Badge
+  // Check Supabase connection (direct client query) & update navbar badge
   async function checkSupabaseHealth() {
     const pill = document.getElementById('db-status-pill');
     const text = document.getElementById('db-status-text');
 
-    try {
-      const res = await fetch('/api/supabase/status');
-      if (res.ok) {
-        const data = await res.json();
-        supabaseStatus = data;
+    const status = await data.health();
+    supabaseStatus = status;
 
-        if (pill && text) {
-          pill.className = 'status-pill-live';
-          if (data.isReady) {
-            pill.classList.add('status-live');
-            pill.setAttribute('title', 'Supabase Cloud Database connected and operational. Click for details.');
-            text.textContent = 'SUPABASE CLOUD LIVE';
-          } else if (data.connected) {
-            pill.classList.add('status-pending');
-            pill.setAttribute('title', 'Supabase connected! Tables setup required in SQL Editor. Click to see instructions.');
-            text.textContent = 'SUPABASE: SCHEMA PENDING';
-          } else {
-            pill.classList.add('status-offline');
-            pill.setAttribute('title', 'Local data storage active. Click to view status.');
-            text.textContent = 'LOCAL REGISTRY ACTIVE';
-          }
-        }
-        return data;
-      }
-    } catch (e) {
-      if (pill && text) {
-        pill.className = 'status-pill-live status-offline';
-        text.textContent = 'LOCAL STORAGE ONLY';
+    if (pill && text) {
+      pill.className = 'status-pill-live';
+      if (status.isReady) {
+        pill.classList.add('status-live');
+        pill.setAttribute('title', 'Supabase Cloud Database connected and operational. Click for details.');
+        text.textContent = 'SUPABASE CLOUD LIVE';
+      } else {
+        pill.classList.add('status-offline');
+        pill.setAttribute('title', 'Cannot reach Supabase (or not authorized). Click for details.');
+        text.textContent = 'SUPABASE UNREACHABLE';
       }
     }
+    return status;
   }
 
-  // Populate Supabase Diagnostics Modal
+  // Populate Supabase Diagnostics Modal (connection status + sign out)
   function renderSupabaseModal() {
     const container = document.getElementById('supabase-modal-content');
     if (!container) return;
 
     const isReady = supabaseStatus.isReady;
-    const isConn = supabaseStatus.connected;
 
     container.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-md); background: ${isReady ? 'rgba(16, 185, 129, 0.12)' : isConn ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : isConn ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
-        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isReady ? '#10b981' : isConn ? '#f59e0b' : '#ef4444'}; color: #fff; font-size: 1.2rem; flex-shrink: 0;">
-          ${isReady ? '✓' : isConn ? '⚡' : '!'}
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-md); background: ${isReady ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isReady ? '#10b981' : '#ef4444'}; color: #fff; font-size: 1.2rem; flex-shrink: 0;">
+          ${isReady ? '✓' : '!'}
         </div>
         <div>
           <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">
-            ${isReady ? 'Supabase PostgreSQL Database Connected & Active' : isConn ? 'Supabase Connected - Table Migration Pending' : 'Supabase Disconnected'}
+            ${isReady ? 'Supabase connected — live & secured' : 'Supabase unreachable'}
           </h4>
-          <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
-            ${supabaseStatus.supabaseUrl || 'https://thtqzhpvjlxiwsjsmfoc.supabase.co'}
+          <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted);">
+            ${isReady
+              ? 'Reads & writes persist to PostgreSQL with Row Level Security (admin-only).'
+              : 'Check your connection, or that your account is an active administrator.'}
           </p>
         </div>
       </div>
 
-      <div style="margin-bottom: 1.25rem;">
-        <h5 style="margin: 0 0 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Database Tables Status</h5>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.82rem;">
-          ${['workers', 'sites', 'attendance_records', 'admin_users', 'audit_logs'].map(tbl => {
-            const found = (supabaseStatus.tablesFound || []).includes(tbl);
-            return `
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border-subtle);">
-                <span style="font-family: var(--font-mono);">${tbl}</span>
-                <span style="font-size: 0.75rem; font-weight: 600; color: ${found ? '#10b981' : '#f59e0b'};">
-                  ${found ? '● Live' : '○ Not Created'}
-                </span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      ${!isReady ? `
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: 1rem; font-size: 0.82rem; line-height: 1.5;">
-          <strong style="color: var(--accent-gold); display: block; margin-bottom: 0.4rem;">
-            📌 How to initialize your Supabase tables (One-time setup):
-          </strong>
-          <ol style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary);">
-            <li>Open the Supabase Dashboard: <a href="https://supabase.com/dashboard/project/thtqzhpvjlxiwsjsmfoc/sql" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: underline;">Supabase SQL Editor</a></li>
-            <li>Click <strong>New query</strong></li>
-            <li>Copy & paste the contents of <code style="font-family: var(--font-mono); background: var(--bg-card-solid); padding: 2px 5px; border-radius: 3px;">supabase/schema.sql</code></li>
-            <li>Click <strong>Run</strong></li>
-          </ol>
-          <div style="margin-top: 0.85rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline btn-sm" id="btn-copy-schema-sql">
-              Copy SQL Schema
-            </button>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">(BuildVantage caches all records seamlessly in the meantime)</span>
-          </div>
-        </div>
-      ` : `
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.82rem; color: #34d399;">
-          ✓ All queries and mutations are persisting directly to PostgreSQL with Row Level Security enabled.
-        </div>
-      `}
+      <button type="button" class="btn btn-outline btn-sm" id="btn-gate-signout">Sign out</button>
     `;
 
-    const copyBtn = document.getElementById('btn-copy-schema-sql');
-    if (copyBtn) {
-      copyBtn.onclick = () => {
-        fetch('/supabase/schema.sql')
-          .then(r => r.text())
-          .then(sql => {
-            navigator.clipboard.writeText(sql);
-            showToast('SQL Schema copied to clipboard!', 'success');
-          })
-          .catch(() => showToast('SQL schema is located in supabase/schema.sql', 'info'));
-      };
-    }
+    const signOutBtn = document.getElementById('btn-gate-signout');
+    if (signOutBtn) signOutBtn.onclick = signOutAdmin;
   }
 
-  // Sync Data with Backend Server & Supabase
+  // Sync data from Supabase (direct client). localStorage stays as an offline cache.
   async function syncWithBackend() {
     try {
-      const [workersRes, sitesRes, attRes] = await Promise.all([
-        fetch('/api/workers').then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch('/api/sites').then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch(`/api/attendance?date=${state.currentAttendanceDate}`).then(r => r.ok ? r.json() : null).catch(() => null)
+      const [workersRows, sitesRows, attMap] = await Promise.all([
+        data.workers.getAll().catch(() => null),
+        data.sites.getAll().catch(() => null),
+        data.attendance.getByDate(state.currentAttendanceDate).catch(() => null)
       ]);
 
       let dataChanged = false;
 
-      if (workersRes && workersRes.success && Array.isArray(workersRes.data) && workersRes.data.length > 0) {
-        state.workers = workersRes.data;
+      if (Array.isArray(workersRows) && workersRows.length > 0) {
+        state.workers = workersRows;
         localStorage.setItem(STORAGE_WORKERS_KEY, JSON.stringify(state.workers));
         dataChanged = true;
       }
 
-      if (sitesRes && sitesRes.success && Array.isArray(sitesRes.data) && sitesRes.data.length > 0) {
-        state.sites = sitesRes.data;
+      if (Array.isArray(sitesRows) && sitesRows.length > 0) {
+        state.sites = sitesRows;
         localStorage.setItem(STORAGE_SITES_KEY, JSON.stringify(state.sites));
         dataChanged = true;
       }
 
-      if (attRes && attRes.success && attRes.data) {
-        state.attendance[state.currentAttendanceDate] = attRes.data;
+      if (attMap && Object.keys(attMap).length > 0) {
+        state.attendance[state.currentAttendanceDate] = attMap;
         localStorage.setItem(STORAGE_ATTENDANCE_KEY, JSON.stringify(state.attendance));
         dataChanged = true;
       }
@@ -658,52 +588,34 @@
     syncWithBackend();
   }
 
-  // Background API Helpers
-  function apiCreateWorker(worker) {
-    fetch('/api/workers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(worker)
-    }).catch(e => console.warn('apiCreateWorker sync error', e));
-  }
-
+  // Background persistence helpers (Supabase-direct). Updates/deletes are
+  // optimistic: local state already changed; these persist and surface errors.
   function apiUpdateWorker(id, updates) {
-    fetch(`/api/workers/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    }).catch(e => console.warn('apiUpdateWorker sync error', e));
+    data.workers.update(id, updates).catch(e => {
+      console.warn('worker update failed', e);
+      showToast('Could not sync worker change: ' + (e.message || 'error'), 'error');
+    });
   }
 
   function apiDeleteWorker(id) {
-    fetch(`/api/workers/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    }).catch(e => console.warn('apiDeleteWorker sync error', e));
-  }
-
-  function apiCreateSite(site) {
-    fetch('/api/sites', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(site)
-    }).catch(e => console.warn('apiCreateSite sync error', e));
+    data.workers.delete(id).catch(e => {
+      console.warn('worker delete failed', e);
+      showToast('Could not delete worker in cloud: ' + (e.message || 'error'), 'error');
+    });
   }
 
   function apiDeleteSite(id) {
-    fetch(`/api/sites/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    }).catch(e => console.warn('apiDeleteSite sync error', e));
+    data.sites.delete(id).catch(e => {
+      console.warn('site delete failed', e);
+      showToast('Could not delete site in cloud: ' + (e.message || 'error'), 'error');
+    });
   }
 
   let attendanceSyncDebounce = null;
   function apiSaveAttendance(date, records) {
     clearTimeout(attendanceSyncDebounce);
     attendanceSyncDebounce = setTimeout(() => {
-      fetch('/api/attendance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, attendance: records })
-      }).catch(e => console.warn('apiSaveAttendance sync error', e));
+      data.attendance.save(date, records).catch(e => console.warn('attendance sync error', e));
     }, 400);
   }
 
@@ -712,9 +624,9 @@
     renderKPIs();
     renderBadgeCount();
 
-    if (worker && action === 'create') {
-      apiCreateWorker(worker);
-    } else if (worker && action === 'update') {
+    // Creates are persisted (awaited) in the form handler so the DB-assigned id
+    // is captured; here we only sync updates/deletes.
+    if (worker && action === 'update') {
       apiUpdateWorker(worker.id, worker);
     } else if (worker && action === 'delete') {
       apiDeleteWorker(worker.id);
@@ -726,9 +638,7 @@
     renderKPIs();
     renderBadgeCount();
 
-    if (site && action === 'create') {
-      apiCreateSite(site);
-    } else if (site && action === 'delete') {
+    if (site && action === 'delete') {
       apiDeleteSite(site.id);
     }
   }
@@ -1365,7 +1275,7 @@
     }
 
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const editId = document.getElementById('worker-form-id').value;
 
@@ -1398,10 +1308,8 @@
             showToast(`Worker #${editId} record updated successfully!`, 'success');
           }
         } else {
-          // New worker
-          const newId = generateNewWorkerId();
-          const newWorker = {
-            id: newId,
+          // New worker — the DB trigger assigns the LAB-### id; capture it from the insert.
+          const payload = {
             name, phone, trade, experience,
             yearsExp: experience === 'Apprentice' ? 1 : experience === 'Journeyman' ? 4 : experience === 'Master Craftsman' ? 8 : 12,
             dailyRate, age, bloodGroup,
@@ -1413,10 +1321,15 @@
             shiftTiming: null,
             avatar: null
           };
-          state.workers.unshift(newWorker);
-          state.selectedWorkerIdForBadge = newId;
-          saveWorkers(newWorker, 'create');
-          showToast(`Labourer ${name} registered as #${newId}!`, 'success');
+          try {
+            const created = await data.workers.create(payload);
+            state.workers.unshift(created);
+            state.selectedWorkerIdForBadge = created.id;
+            saveWorkers(); // persist cache + refresh KPIs (no extra network write)
+            showToast(`Labourer ${created.name} registered as #${created.id}!`, 'success');
+          } catch (err) {
+            showToast('Could not register worker: ' + (err.message || 'error'), 'error');
+          }
         }
 
         renderWorkforceDirectory();
@@ -1631,7 +1544,7 @@
     if (addOrderBtn) addOrderBtn.addEventListener('click', handleOpen);
 
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('inp-site-name').value.trim();
         const client = document.getElementById('inp-site-client').value.trim();
@@ -1639,17 +1552,19 @@
         const quota = parseInt(document.getElementById('inp-site-quota').value, 10) || 10;
         const supervisor = document.getElementById('inp-site-supervisor').value.trim() || 'Chief Site Engineer';
 
-        const newSite = {
-          id: `SITE-0${state.sites.length + 1}`,
-          name, client, location, quota, supervisor,
-          shiftTiming: 'Morning Shift (07:00 - 15:30)'
-        };
-
-        state.sites.unshift(newSite);
-        saveSites(newSite, 'create');
+        try {
+          const created = await data.sites.create({
+            name, client, location, quota, supervisor,
+            shiftTiming: 'Morning Shift (07:00 - 15:30)'
+          });
+          state.sites.unshift(created);
+          saveSites(); // persist cache + refresh KPIs (no extra network write)
+          showToast(`Work order site "${created.name}" created!`, 'success');
+        } catch (err) {
+          showToast('Could not create site: ' + (err.message || 'error'), 'error');
+        }
         renderSitesView();
         closeModal('modal-site-form');
-        showToast(`Work order site "${name}" created!`, 'success');
       });
     }
   }
@@ -2181,7 +2096,11 @@
   // =========================================================================
   // Initialize Application
   // =========================================================================
-  function init() {
+  async function init() {
+    // Gate the dashboard: only boots once an active admin is signed in.
+    const admin = await requireAdmin();
+    if (!admin) return;
+
     initData();
     renderKPIs();
     renderBadgeCount();

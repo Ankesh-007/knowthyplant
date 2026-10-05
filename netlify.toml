@@ -1,0 +1,40 @@
+# Netlify configuration — static Vite build, no backend.
+#
+# Set these as build environment variables in the Netlify UI
+# (Site settings -> Environment variables), NOT here:
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Clean URLs -> built HTML files (200 = rewrite, URL stays clean).
+# These mirror the dev-server rewrites in vite.config.mjs.
+# NOTE: paths are relative to the publish dir (dist/); confirm against the first
+# build output and adjust if Vite emits the HTML elsewhere.
+
+[[redirects]]
+  from = "/"
+  to = "/public/landing.html"
+  status = 200
+
+[[redirects]]
+  from = "/find-workers"
+  to = "/public/workers.html"
+  status = 200
+
+[[redirects]]
+  from = "/onboarding"
+  to = "/public/onboarding.html"
+  status = 200
+
+[[redirects]]
+  from = "/app"
+  to = "/app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/backend-admin"
+  to = "/app/admin.html"
+  status = 200

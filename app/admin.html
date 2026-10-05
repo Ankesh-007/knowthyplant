@@ -6,7 +6,7 @@
   <meta name="description" content="BuildVantage - Backend Administrator Gateway. Manage administrative users, operational access roles, security credentials, and system audit logs.">
   <title>BuildVantage | Backend Admin Users & Security Console</title>
   
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="app-container">
@@ -47,7 +47,7 @@
             <span id="db-status-text">SUPABASE SYNC</span>
           </div>
 
-          <a href="/" class="btn btn-outline btn-sm" title="Return to Field Labour Registry">
+          <a href="/app" class="btn btn-outline btn-sm" title="Return to Field Labour Registry">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
@@ -420,7 +420,7 @@
           <strong>BUILDVANTAGE BACKEND ADMINISTRATION GATEWAY</strong> — Restricted Internal Operations Console.
         </div>
         <div style="display: flex; gap: 1.5rem; align-items: center;">
-          <a href="/" style="color: var(--accent-gold); text-decoration: none;">Workforce Registry (Public)</a>
+          <a href="/app" style="color: var(--accent-gold); text-decoration: none;">Workforce Registry (Public)</a>
           <span style="font-family: var(--font-mono); color: var(--accent-cyan);">ROOT PERMISSIONS ENABLED</span>
         </div>
       </div>
@@ -570,6 +570,6 @@
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
   <!-- Admin Application Logic -->
-  <script src="admin.js"></script>
+  <script type="module" src="/app/admin.js"></script>
 </body>
 </html>

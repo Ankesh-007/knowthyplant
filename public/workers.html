@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse trusted local workers on LocalHands and connect directly.">
+  <title>Find a Worker | LocalHands</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/public/landing.css">
+</head>
+<body class="lh">
+  <header id="site-nav"></header>
+
+  <main>
+    <section class="page-head">
+      <div class="container">
+        <h1 class="page-head__title">Find a Worker</h1>
+        <p class="page-head__lead">Browse trusted local workers and connect directly.</p>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="browse-toolbar">
+        <div class="browse-search">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="field__input" id="search" type="search" placeholder="Search by name, skill or location" aria-label="Search workers">
+        </div>
+        <div class="filter-row" id="filter-row" role="group" aria-label="Filter by category"></div>
+      </div>
+
+      <div class="worker-grid" id="worker-grid"></div>
+      <div id="browse-status"></div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script type="module" src="/public/js/workers.js"></script>
+</body>
+</html>

@@ -1,7 +1,9 @@
 /**
  * BUILDVANTAGE - Backend Administrator Portal Logic
- * Controls backend users, roles matrix, audit trails, and REST API communications
+ * Controls backend users, roles matrix, audit trails via direct Supabase access.
  */
+import { requireAdmin, signOutAdmin } from './js/adminGate.js';
+import * as data from './js/dataClient.js';
 
 (function () {
   'use strict';
@@ -86,36 +88,22 @@
     const pill = document.getElementById('db-status-pill');
     const text = document.getElementById('db-status-text');
 
-    try {
-      const res = await fetch('/api/supabase/status');
-      if (res.ok) {
-        const data = await res.json();
-        supabaseStatus = data;
+    const status = await data.health();
+    supabaseStatus = status;
 
-        if (pill && text) {
-          pill.className = 'status-pill-live';
-          if (data.isReady) {
-            pill.classList.add('status-live');
-            pill.setAttribute('title', 'Supabase Cloud Database connected and operational.');
-            text.textContent = 'SUPABASE CLOUD LIVE';
-          } else if (data.connected) {
-            pill.classList.add('status-pending');
-            pill.setAttribute('title', 'Supabase connected! Tables setup required in SQL Editor.');
-            text.textContent = 'SUPABASE: SCHEMA PENDING';
-          } else {
-            pill.classList.add('status-offline');
-            pill.setAttribute('title', 'Local flat-file cache active.');
-            text.textContent = 'LOCAL REGISTRY ACTIVE';
-          }
-        }
-        return data;
-      }
-    } catch (e) {
-      if (pill && text) {
-        pill.className = 'status-pill-live status-offline';
-        text.textContent = 'LOCAL STORAGE ONLY';
+    if (pill && text) {
+      pill.className = 'status-pill-live';
+      if (status.isReady) {
+        pill.classList.add('status-live');
+        pill.setAttribute('title', 'Supabase Cloud Database connected and operational.');
+        text.textContent = 'SUPABASE CLOUD LIVE';
+      } else {
+        pill.classList.add('status-offline');
+        pill.setAttribute('title', 'Cannot reach Supabase (or not authorized).');
+        text.textContent = 'SUPABASE UNREACHABLE';
       }
     }
+    return status;
   }
 
   function renderSupabaseModal() {
@@ -123,77 +111,29 @@
     if (!container) return;
 
     const isReady = supabaseStatus.isReady;
-    const isConn = supabaseStatus.connected;
 
     container.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-md); background: ${isReady ? 'rgba(16, 185, 129, 0.12)' : isConn ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : isConn ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
-        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isReady ? '#10b981' : isConn ? '#f59e0b' : '#ef4444'}; color: #fff; font-size: 1.2rem; flex-shrink: 0;">
-          ${isReady ? '✓' : isConn ? '⚡' : '!'}
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-md); background: ${isReady ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${isReady ? '#10b981' : '#ef4444'}; color: #fff; font-size: 1.2rem; flex-shrink: 0;">
+          ${isReady ? '✓' : '!'}
         </div>
         <div>
           <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">
-            ${isReady ? 'Supabase PostgreSQL Database Connected & Active' : isConn ? 'Supabase Connected - Table Migration Pending' : 'Supabase Disconnected'}
+            ${isReady ? 'Supabase connected — live & secured' : 'Supabase unreachable'}
           </h4>
-          <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
-            ${supabaseStatus.supabaseUrl || 'https://thtqzhpvjlxiwsjsmfoc.supabase.co'}
+          <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted);">
+            ${isReady
+              ? 'Admin users & audit logs persist to PostgreSQL with Row Level Security (admin-only).'
+              : 'Check your connection, or that your account is an active administrator.'}
           </p>
         </div>
       </div>
 
-      <div style="margin-bottom: 1.25rem;">
-        <h5 style="margin: 0 0 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Database Tables Status</h5>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.82rem;">
-          ${['workers', 'sites', 'attendance_records', 'admin_users', 'audit_logs'].map(tbl => {
-            const found = (supabaseStatus.tablesFound || []).includes(tbl);
-            return `
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border-subtle);">
-                <span style="font-family: var(--font-mono);">${tbl}</span>
-                <span style="font-size: 0.75rem; font-weight: 600; color: ${found ? '#10b981' : '#f59e0b'};">
-                  ${found ? '● Live' : '○ Not Created'}
-                </span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      ${!isReady ? `
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: 1rem; font-size: 0.82rem; line-height: 1.5;">
-          <strong style="color: var(--accent-gold); display: block; margin-bottom: 0.4rem;">
-            📌 How to initialize your Supabase tables (One-time setup):
-          </strong>
-          <ol style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary);">
-            <li>Open the Supabase Dashboard: <a href="https://supabase.com/dashboard/project/thtqzhpvjlxiwsjsmfoc/sql" target="_blank" rel="noopener" style="color: var(--accent-cyan); text-decoration: underline;">Supabase SQL Editor</a></li>
-            <li>Click <strong>New query</strong></li>
-            <li>Copy & paste the contents of <code style="font-family: var(--font-mono); background: var(--bg-card-solid); padding: 2px 5px; border-radius: 3px;">supabase/schema.sql</code></li>
-            <li>Click <strong>Run</strong></li>
-          </ol>
-          <div style="margin-top: 0.85rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline btn-sm" id="btn-copy-schema-sql">
-              Copy SQL Schema
-            </button>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">(BuildVantage is currently caching all records seamlessly on the server)</span>
-          </div>
-        </div>
-      ` : `
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.82rem; color: #34d399;">
-          ✓ All admin users and audit logs are persisting directly to PostgreSQL with Row Level Security enabled.
-        </div>
-      `}
+      <button type="button" class="btn btn-outline btn-sm" id="btn-gate-signout">Sign out</button>
     `;
 
-    const copyBtn = document.getElementById('btn-copy-schema-sql');
-    if (copyBtn) {
-      copyBtn.onclick = () => {
-        fetch('/supabase/schema.sql')
-          .then(r => r.text())
-          .then(sql => {
-            navigator.clipboard.writeText(sql);
-            showToast('SQL Schema copied to clipboard!', 'success');
-          })
-          .catch(() => showToast('SQL schema is located in supabase/schema.sql', 'info'));
-      };
-    }
+    const signOutBtn = document.getElementById('btn-gate-signout');
+    if (signOutBtn) signOutBtn.onclick = signOutAdmin;
   }
 
   // =========================================================================
@@ -201,13 +141,9 @@
   // =========================================================================
   async function fetchUsers() {
     try {
-      const res = await fetch('/api/admin/users');
-      if (res.ok) {
-        const json = await res.json();
-        state.users = json.data || [];
-      }
+      state.users = await data.adminUsers.getAll();
     } catch (err) {
-      console.warn('API fetch failed, loading fallback admin users', err);
+      console.warn('Admin users fetch failed', err);
     }
     renderAdminKPIs();
     renderAdminUsers();
@@ -215,12 +151,8 @@
 
   async function fetchAuditLogs() {
     try {
-      const res = await fetch('/api/admin/audit-logs');
-      if (res.ok) {
-        const json = await res.json();
-        state.auditLogs = json.data || [];
-        renderAuditLogs();
-      }
+      state.auditLogs = await data.auditLogs.getAll();
+      renderAuditLogs();
     } catch (err) {
       console.warn('Audit logs fetch failed', err);
     }
@@ -515,27 +447,15 @@
         const permCheckboxes = document.querySelectorAll('input[name="perm"]:checked');
         const permissions = Array.from(permCheckboxes).map(cb => cb.value);
 
-        const payload = { name, email, role, department, status, twoFactor, permissions };
+        const fields = { name, email, role, department, status, twoFactor, permissions };
 
         try {
-          let url = '/api/admin/users';
-          let method = 'POST';
-
           if (editId) {
-            url = `/api/admin/users/${editId}`;
-            method = 'PUT';
-          }
-
-          const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            alert(data.error || 'Operation failed');
-            return;
+            // Merge onto the existing record so unspecified columns (lastLogin, avatar) are preserved.
+            const existing = state.users.find(u => u.id === editId) || {};
+            await data.adminUsers.update(editId, { ...existing, ...fields });
+          } else {
+            await data.adminUsers.create(fields);
           }
 
           showToast(editId ? `User #${editId} updated!` : `Administrator ${name} created!`, 'success');
@@ -544,7 +464,7 @@
           await fetchAuditLogs();
         } catch (err) {
           console.error('Save user failed', err);
-          showToast('Failed to save backend user', 'error');
+          showToast(err.message || 'Failed to save backend user', 'error');
         }
       });
     }
@@ -577,18 +497,13 @@
 
     const newStatus = user.status === 'Active' ? 'Suspended' : 'Active';
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (res.ok) {
-        showToast(`User #${userId} status changed to ${newStatus}`, 'info');
-        await fetchUsers();
-        await fetchAuditLogs();
-      }
+      await data.adminUsers.update(userId, { ...user, status: newStatus });
+      showToast(`User #${userId} status changed to ${newStatus}`, 'info');
+      await fetchUsers();
+      await fetchAuditLogs();
     } catch (err) {
       console.error('Toggle status error', err);
+      showToast(err.message || 'Could not change status', 'error');
     }
   }
 
@@ -598,14 +513,13 @@
 
     if (confirm(`Revoke credentials and delete administrator ${user.name} (#${userId})?`)) {
       try {
-        const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-        if (res.ok) {
-          showToast(`User #${userId} permanently deleted.`, 'warning');
-          await fetchUsers();
-          await fetchAuditLogs();
-        }
+        await data.adminUsers.delete(userId);
+        showToast(`User #${userId} permanently deleted.`, 'warning');
+        await fetchUsers();
+        await fetchAuditLogs();
       } catch (err) {
         console.error('Delete user error', err);
+        showToast(err.message || 'Could not delete user', 'error');
       }
     }
   }
@@ -780,11 +694,15 @@
   // =========================================================================
   // Initialization
   // =========================================================================
-  function init() {
+  async function init() {
     const savedTheme = localStorage.getItem('BUILDVANTAGE_THEME');
     if (savedTheme) {
       document.documentElement.setAttribute('data-theme', savedTheme);
     }
+
+    // Gate the admin portal: only boots once an active admin is signed in.
+    const admin = await requireAdmin();
+    if (!admin) return;
 
     setupAdminModal();
     setupEventListeners();

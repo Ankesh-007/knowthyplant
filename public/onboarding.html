@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your LocalHands worker profile — add your skills, photo and experience.">
+  <title>Create your profile | LocalHands</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/public/landing.css">
+</head>
+<body class="lh">
+  <header id="site-nav"></header>
+
+  <main>
+    <section class="page-head">
+      <div class="container">
+        <h1 class="page-head__title">Create your worker profile</h1>
+        <p class="page-head__lead">Showcase your skills so customers can find and trust you.</p>
+      </div>
+    </section>
+
+    <section class="container">
+      <form class="form-card" id="profile-form" novalidate>
+        <div class="photo-field">
+          <div class="photo-preview" id="photo-preview" aria-hidden="true"></div>
+          <div class="field">
+            <label class="field__label" for="photo">Profile photo</label>
+            <input id="photo" name="photo" type="file" accept="image/png, image/jpeg, image/webp">
+          </div>
+        </div>
+
+        <div class="form-grid2">
+          <label class="field field--full">
+            <span class="field__label">Full name</span>
+            <input class="field__input" name="full_name" type="text" autocomplete="name" required placeholder="Your name">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Trade / category</span>
+            <select class="field__select" name="trade" id="trade" required></select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Location</span>
+            <input class="field__input" name="location" type="text" placeholder="Area or city">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Phone</span>
+            <input class="field__input" name="phone" type="tel" autocomplete="tel" placeholder="Contact number">
+          </label>
+
+          <label class="field">
+            <span class="field__label">Daily rate (optional)</span>
+            <input class="field__input" name="daily_rate" type="number" min="0" step="1" placeholder="e.g. 800">
+          </label>
+
+          <label class="field field--full">
+            <span class="field__label">Skills <small>(comma separated)</small></span>
+            <input class="field__input" name="skills" type="text" placeholder="e.g. Pipe fitting, Leak repair, Fittings">
+          </label>
+
+          <label class="field field--full">
+            <span class="field__label">About you</span>
+            <textarea class="field__textarea" name="bio" placeholder="A few lines about your experience and the work you do."></textarea>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="cta cta--primary cta--lg" type="submit" id="save-btn">Save profile</button>
+          <a class="cta cta--ghost" href="/find-workers">View all workers</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script type="module" src="/public/js/onboarding.js"></script>
+</body>
+</html>
